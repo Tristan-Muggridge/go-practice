@@ -5,11 +5,13 @@ import (
 	"time"
 )
 
-func TestTask(t *testing.T) {
+var result *Task;
+
+func Test_Constructor(t *testing.T) {
 
 	now := time.Now()
 
-	result := Task{
+	result = Task{
 		ID:          "1",
 		Title:       "Test Task",
 		Description: "This is a test task.",
@@ -35,5 +37,14 @@ func TestTask(t *testing.T) {
 
 	if result.Completed != false {
 		t.Errorf("Task.Completed should be false, got %t", result.Completed)
+	}
+}
+
+func Test_Update_Title(t *testing.T) {
+	newTitle := "new-title"
+	result.UpdateTitle(newTitle)
+
+	if result.Title != newTitle {
+		t.Errorf("Task.UpdateTitle was not successful. Got %s, but should be %s", result.Title, newTitle)
 	}
 }
