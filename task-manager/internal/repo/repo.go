@@ -9,6 +9,7 @@ import (
 
 var db *pg.DB
 
+// データベース接続、db参照を返す
 func ConnectDb() *pg.DB {
 	db = pg.Connect(&pg.Options{
 		User:     "postgres",
@@ -18,6 +19,7 @@ func ConnectDb() *pg.DB {
 	return db
 }
 
+// テーブル作成
 func CreateSchema(db *pg.DB) error {
 	models := []interface{}{
 		(*models.Task)(nil),
@@ -35,14 +37,13 @@ func CreateSchema(db *pg.DB) error {
 	return nil
 }
 
+// タスク作成
 func CreateTask(task *models.Task) error {
 	_, err := db.Model(task).Insert()
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
+// タスク取得、配列参照が本物より能率的になる
 func GetTasks() []*models.Task {
 	var tasks []*models.Task
 	err := db.Model(&tasks).Select()
