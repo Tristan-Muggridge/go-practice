@@ -7,7 +7,7 @@ import (
 type TaskRepo interface {
 	CreateTask(task *task.Task) error
 	GetTasks() []*task.Task
-	GetTaskById(id string) (*task.Task, error)
+	GetTaskById(id int) (*task.Task, error)
 	UpdateTask(task *task.Task) error
 	DeleteTask(task *task.Task) error
 	GetWhere(where string, params ...interface{}) ([]*task.Task, error)
