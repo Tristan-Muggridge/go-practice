@@ -55,6 +55,7 @@ package cli
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -82,7 +83,7 @@ func captureInput() string {
 	return strings.TrimSpace(input) // remove the newline character at the end
 }
 
-func onCreateTask() {
+func onCreateTask(repo repo.TaskRepo) {
 	fmt.Println("Please enter a title:")
 	title := captureInput()
 	fmt.Println("Please enter a description:")
@@ -95,7 +96,116 @@ func onCreateTask() {
 	}
 
 	fmt.Println("Creating task...")
+
+	err := repo.CreateTask(task)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	fmt.Println(task)
+}
+
+func onListTasks(repo repo.TaskRepo) {
+	fmt.Println("Listing tasks...")
+	tasks := repo.GetTasks()
+	for _, task := range tasks {
+		fmt.Println(task)
+	}
+}
+
+func onEditTask(repo repo.TaskRepo) {
+	fmt.Println("Please enter the ID of the task you want to edit:")
+	id := captureInput()
+	id_int, err := strconv.Atoi(id)
+	if err != nil {
+		fmt.Println("Invalid ID")
+		return
+	}
+
+	task, err := repo.GetTaskById(id_int)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if task == nil {
+		fmt.Println("Task not found")
+		return
+	}
+
+	fmt.Println("Please enter your edits using the following structure:")
+	fmt.Println("--title \"Update Title\" --description \"Updated Description\" --completed: true")
+
+	edits := captureInput()                       // --title "Update Title" --description "Updated Description" --completed: true
+	edits = strings.TrimSpace(edits)              // --title "Update Title" --description "Updated Description" --completed: true
+	edits = strings.ReplaceAll(edits, "--", "")   // title "Update Title" description "Updated Description" completed: true
+	edits = strings.ReplaceAll(edits, " \"", ":") // title:Update Title" description:Updated Description" completed: true
+	edits = strings.ReplaceAll(edits, "\" ", ",") // title:Update Title,description:Updated Description,completed: true
+	edits = strings.ReplaceAll(edits, ": ", ":")  // title:Update Title,description:Updated Description,completed:true
+
+	editsMap := make(map[string]string)
+
+	for _, edit := range strings.Split(edits, ",") {
+		edit = strings.TrimSpace(edit)
+		editParts := strings.Split(edit, ":")
+		if len(editParts) != 2 {
+			fmt.Println("Invalid edit")
+			return
+		}
+		editsMap[editParts[0]] = editParts[1]
+	}
+
+	if title, ok := editsMap["title"]; ok {
+		task.Title = title
+	}
+
+	if description, ok := editsMap["description"]; ok {
+		task.Description = description
+	}
+
+	if completed, ok := editsMap["completed"]; ok {
+		completed_bool, err := strconv.ParseBool(completed)
+		if err != nil {
+			fmt.Println("Invalid completed value")
+			return
+		}
+		task.Completed = completed_bool
+	}
+
+	fmt.Println("Updating task...")
+
+	err = repo.UpdateTask(task)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println(task)
+}
+
+func onDeleteTask(repo repo.TaskRepo) {
+	fmt.Println("Please enter the ID of the task you want to delete:")
+	id := captureInput()
+	id_int, err := strconv.Atoi(id)
+	if err != nil {
+		fmt.Println("Invalid ID")
+		return
+	}
+
+	task, err := repo.GetTaskById(id_int)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if task == nil {
+		fmt.Println("Task not found")
+		return
+	}
+
+	fmt.Println("Deleting task...")
+	err = repo.DeleteTask(task)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("Task deleted")
 }
 
 func NewCli(repo repo.TaskRepo) {
@@ -121,13 +231,13 @@ func NewCli(repo repo.TaskRepo) {
 
 		switch selectedOption {
 		case controlOptions[0]:
-			onCreateTask()
+			onCreateTask(repo)
 		case controlOptions[1]:
-			fmt.Println("Listing tasks...") // TODO: Implement
+			onListTasks(repo)
 		case controlOptions[2]:
-			fmt.Println("Editing task...") // TODO: Implement
+			onEditTask(repo)
 		case controlOptions[3]:
-			fmt.Println("Deleting task...") // TODO: Implement
+			onDeleteTask(repo)
 		default:
 			fmt.Println("Invalid option") // TODO: Implement
 		}

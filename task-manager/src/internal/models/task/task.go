@@ -7,7 +7,7 @@ import (
 
 // タスクの構造体
 type Task struct {
-	Id          int64 `pg:",pk" json:"id"`
+	Id          int `pg:",pk" json:"id"`
 	Title       string
 	Description string
 	Deadline    time.Time
@@ -17,7 +17,7 @@ type Task struct {
 // タスクが文字列で返ってくる
 func (t *Task) String() string {
 	return fmt.Sprintf(
-		"Task: %s\nDescription: %s\nDeadline: %s\nCompleted: %t\n",
+		"Task: %s | Description: %s | Deadline: %s | Completed: %t",
 		t.Title, t.Description, t.Deadline, t.Completed,
 	)
 }

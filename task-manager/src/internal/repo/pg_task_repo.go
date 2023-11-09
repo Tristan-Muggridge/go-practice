@@ -25,7 +25,7 @@ func (repo *PgTaskRepo) GetTasks() []*task.Task {
 	return tasks
 }
 
-func (repo *PgTaskRepo) GetTaskById(id int64) (*task.Task, error) {
+func (repo *PgTaskRepo) GetTaskById(id int) (*task.Task, error) {
 	task := &task.Task{Id: id}
 	err := repo.db.Model(task).WherePK().Select()
 	return task, err
